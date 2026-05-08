@@ -1,0 +1,17 @@
+
+
+curl -fsSL https://ollama.com/install.sh | sh
+ollama run tinyllama:1.1b
+
+ollama run llama3.2:3b
+
+
+
+For Coding
+ollama run phi3:mini
+For General Chat
+ollama run gemma2:2b
+For Very Low-End PCs
+ollama run tinyllama
+For Balanced Performance
+ollama run qwen2.5:1.5b
