@@ -1,0 +1,231 @@
+
+D_27_Isha Komervelliwar <isha.22310683@viit.ac.in>
+5:20 AM (15 minutes ago)
+to me
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <map>
+#include <iomanip>
+
+using namespace std;
+
+// Macro Name Table Entry
+struct MNTEntry {
+    string macroName;
+    int mdtIndex;
+};
+
+// Macro Definition Table
+vector<string> MDT;
+
+// Macro Name Table
+vector<MNTEntry> MNT;
+
+// Argument List Array
+map<string, int> ALA;
+
+// Function to split string
+vector<string> split(string line) {
+    vector<string> tokens;
+    stringstream ss(line);
+    string word;
+
+    while (ss >> word) {
+        tokens.push_back(word);
+    }
+
+    return tokens;
+}
+
+int main() {
+
+    // Sample Input Program
+    vector<string> sourceCode = {
+        "MACRO",
+        "INCR &ARG1,&ARG2",
+        "A 1,&ARG1",
+        "L 2,&ARG2",
+        "MEND",
+        "START",
+        "INCR DATA1,DATA2",
+        "END"
+    };
+
+    bool macroFound = false;
+
+    cout << "\n===== PASS 1 =====\n";
+
+    // PASS 1
+    for (int i = 0; i < sourceCode.size(); i++) {
+
+        string line = sourceCode[i];
+
+        if (line == "MACRO") {
+
+            macroFound = true;
+
+            // Next line contains macro prototype
+            string prototype = sourceCode[++i];
+
+            vector<string> tokens = split(prototype);
+
+            string macroName = tokens[0];
+
+            // Store in MNT
+            MNT.push_back({macroName, (int)MDT.size()});
+
+            // Process Arguments
+            string args = tokens[1];
+
+            stringstream ss(args);
+            string temp;
+
+            int index = 1;
+
+            while (getline(ss, temp, ',')) {
+                ALA[temp] = index++;
+            }
+
+            // Store prototype in MDT
+            MDT.push_back(prototype);
+
+            // Store macro body
+            while (sourceCode[++i] != "MEND") {
+
+                string bodyLine = sourceCode[i];
+
+                // Replace arguments with positional notation
+                for (auto arg : ALA) {
+
+                    size_t pos = bodyLine.find(arg.first);
+
+                    if (pos != string::npos) {
+                        bodyLine.replace(pos,
+                                         arg.first.length(),
+                                         "#" + to_string(arg.second));
+                    }
+                }
+
+                MDT.push_back(bodyLine);
+            }
+
+            MDT.push_back("MEND");
+        }
+    }
+
+    // Display MNT
+    cout << "\nMACRO NAME TABLE (MNT)\n";
+    cout << left << setw(15) << "Macro Name"
+         << "MDT Index\n";
+
+    for (auto entry : MNT) {
+        cout << left << setw(15)
+             << entry.macroName
+             << entry.mdtIndex << endl;
+    }
+
+    // Display MDT
+    cout << "\nMACRO DEFINITION TABLE (MDT)\n";
+
+    for (int i = 0; i < MDT.size(); i++) {
+        cout << i << "\t" << MDT[i] << endl;
+    }
+
+    // Display ALA
+    cout << "\nARGUMENT LIST ARRAY (ALA)\n";
+    cout << left << setw(15) << "Argument"
+         << "Position\n";
+
+    for (auto arg : ALA) {
+        cout << left << setw(15)
+             << arg.first
+             << arg.second << endl;
+    }
+
+    cout << "\n===== PASS 2 =====\n";
+
+    // PASS 2 : Macro Expansion
+    cout << "\nEXPANDED CODE\n";
+
+    bool startExpansion = false;
+
+    for (string line : sourceCode) {
+
+        if (line == "START") {
+            startExpansion = true;
+            cout << line << endl;
+            continue;
+        }
+
+        if (!startExpansion)
+            continue;
+
+        vector<string> tokens = split(line);
+
+        if (tokens.size() == 0)
+            continue;
+
+        string instruction = tokens[0];
+
+        bool macroCall = false;
+
+        for (auto entry : MNT) {
+
+            if (instruction == entry.macroName) {
+
+                macroCall = true;
+
+                // Actual Arguments
+                vector<string> actualArgs;
+
+                string argString = tokens[1];
+
+                stringstream ss(argString);
+                string temp;
+
+                while (getline(ss, temp, ',')) {
+                    actualArgs.push_back(temp);
+                }
+
+                // Expand Macro from MDT
+                int mdtPtr = entry.mdtIndex + 1;
+
+                while (MDT[mdtPtr] != "MEND") {
+
+                    string expandedLine = MDT[mdtPtr];
+
+                    for (int i = 0; i < actualArgs.size(); i++) {
+
+                        string posNotation =
+                            "#" + to_string(i + 1);
+
+                        size_t pos =
+                            expandedLine.find(posNotation);
+
+                        if (pos != string::npos) {
+
+                            expandedLine.replace(
+                                pos,
+                                posNotation.length(),
+                                actualArgs[i]
+                            );
+                        }
+                    }
+
+                    cout << expandedLine << endl;
+
+                    mdtPtr++;
+                }
+            }
+        }
+
+        if (!macroCall) {
+            cout << line << endl;
+        }
+    }
+
+    return 0;
+}
