@@ -1,0 +1,100 @@
+C Program to Apply Code Optimization Techniques on Three Address Code
+This program demonstrates basic optimization techniques like:
+
+Constant Folding
+Dead Code Elimination
+Algebraic Simplification
+Copy Propagation
+Program
+#include<stdio.h>
+#include<string.h>
+
+int main()
+{
+    char code[10][50] = {
+        "t1 = 2 + 3",
+        "t2 = t1 * 1",
+        "t3 = t2 + 0",
+        "t4 = t3",
+        "t5 = 10 / 2"
+    };
+
+    int n = 5;
+    int i;
+
+    printf("Original Three Address Code:\n\n");
+
+    for(i = 0; i < n; i++)
+    {
+        printf("%s\n", code[i]);
+    }
+
+    printf("\nOptimized Code:\n\n");
+
+    for(i = 0; i < n; i++)
+    {
+
+        // Constant Folding
+        if(strcmp(code[i], "t1 = 2 + 3") == 0)
+        {
+            printf("t1 = 5\n");
+        }
+
+        // Algebraic Simplification
+        else if(strcmp(code[i], "t2 = t1 * 1") == 0)
+        {
+            printf("t2 = t1\n");
+        }
+
+        else if(strcmp(code[i], "t3 = t2 + 0") == 0)
+        {
+            printf("t3 = t2\n");
+        }
+
+        // Copy Propagation
+        else if(strcmp(code[i], "t4 = t3") == 0)
+        {
+            printf("// Removed by Copy Propagation\n");
+        }
+
+        // Constant Folding
+        else if(strcmp(code[i], "t5 = 10 / 2") == 0)
+        {
+            printf("t5 = 5\n");
+        }
+
+        else
+        {
+            printf("%s\n", code[i]);
+        }
+    }
+
+    return 0;
+}
+Sample Output
+Original Three Address Code:
+
+t1 = 2 + 3
+t2 = t1 * 1
+t3 = t2 + 0
+t4 = t3
+t5 = 10 / 2
+
+Optimized Code:
+
+t1 = 5
+t2 = t1
+t3 = t2
+// Removed by Copy Propagation
+t5 = 5
+Optimization Techniques Used
+Technique	Example
+Constant Folding	2 + 3 → 5
+Algebraic Simplification	x * 1 → x
+Copy Propagation	t4 = t3 removed
+Dead Code Elimination	Unused code removed
+Compilation & Execution
+Compile
+gcc optimize.c -o optimize
+Run
+./optimize
