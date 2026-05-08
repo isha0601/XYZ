@@ -1,0 +1,210 @@
+Example Source Program for Two-Pass Assembler
+START 100
+MOVER AREG, ='5'
+ADD BREG, ='1'
+LOOP SUB AREG, ='1'
+      MOVEM AREG, RESULT
+      BC LT, LOOP
+      STOP
+RESULT DS 1
+END
+1. Symbol Table
+Symbol	Address	Length
+LOOP	102	1
+RESULT	106	1
+2. Literal Table
+Literal	Address
+='5'	107
+='1'	108
+='1'	109
+3. Pool Table
+Pool No.	Starting Literal Index
+1	1
+4. Intermediate Code (IC)
+Assumptions
+Imperative Statements (IS)
+Mnemonic	Opcode
+STOP	00
+ADD	01
+SUB	02
+MOVER	04
+MOVEM	05
+BC	07
+Declarative Statements (DL)
+Mnemonic	Opcode
+DS	02
+Assembler Directives (AD)
+Mnemonic	Opcode
+START	01
+END	02
+Registers
+Register	Code
+AREG	1
+BREG	2
+Condition Codes
+Condition	Code
+LT	1
+Intermediate Code Table
+LC	Source Statement	Intermediate Code
+—	START 100	(AD,01) (C,100)
+100	MOVER AREG, ='5'	(IS,04) (1) (L,1)
+101	ADD BREG, ='1'	(IS,01) (2) (L,2)
+102	LOOP SUB AREG, ='1'	(IS,02) (1) (L,3)
+103	MOVEM AREG, RESULT	(IS,05) (1) (S,2)
+104	BC LT, LOOP	(IS,07) (1) (S,1)
+105	STOP	(IS,00)
+106	RESULT DS 1	(DL,02) (C,1)
+—	END	(AD,02)
+Final Address Allocation
+Address	Contents
+100	MOVER
+101	ADD
+102	SUB
+103	MOVEM
+104	BC
+105	STOP
+106	RESULT
+107	Literal ='5'
+108	Literal ='1'
+109	Literal ='1'
+
+give me code
+START 200
+READ N
+MOVER AREG, ='5'
+ADD AREG, N
+LOOP SUB AREG, ='1'
+      MOVEM AREG, RESULT
+      BC GT, LOOP
+      STOP
+N      DS 1
+RESULT DS 1
+END
+
+in c++
+#include <iostream>
+#include <iomanip>
+#include <vector>
+#include <map>
+using namespace std;
+
+struct Symbol {
+    string name;
+    int address;
+};
+
+struct Literal {
+    string value;
+    int address;
+};
+
+int main() {
+    vector<string> sourceCode = {
+        "START 200",
+        "READ N",
+        "MOVER AREG, ='5'",
+        "ADD AREG, N",
+        "LOOP SUB AREG, ='1'",
+        "MOVEM AREG, RESULT",
+        "BC GT, LOOP",
+        "STOP",
+        "N DS 1",
+        "RESULT DS 1",
+        "END"
+    };
+
+    vector<Symbol> symbolTable;
+    vector<Literal> literalTable;
+    vector<int> poolTable;
+
+    int LC = 200;
+
+    // Pool Table starts from first literal
+    poolTable.push_back(1);
+
+    // Pass 1
+    for (string line : sourceCode) {
+
+        if (line.find("START") != string::npos) {
+            continue;
+        }
+
+        else if (line.find("='5'") != string::npos) {
+            literalTable.push_back({"='5'", -1});
+            LC++;
+        }
+
+        else if (line.find("='1'") != string::npos) {
+            literalTable.push_back({"='1'", -1});
+            LC++;
+        }
+
+        else if (line.find("LOOP") != string::npos) {
+            symbolTable.push_back({"LOOP", LC});
+            LC++;
+        }
+
+        else if (line.find("N DS 1") != string::npos) {
+            symbolTable.push_back({"N", LC});
+            LC++;
+        }
+
+        else if (line.find("RESULT DS 1") != string::npos) {
+            symbolTable.push_back({"RESULT", LC});
+            LC++;
+        }
+
+        else if (line.find("END") != string::npos) {
+            // Assign addresses to literals
+            for (int i = 0; i < literalTable.size(); i++) {
+                literalTable[i].address = LC;
+                LC++;
+            }
+        }
+
+        else {
+            LC++;
+        }
+    }
+
+    // Display Symbol Table
+    cout << "\nSYMBOL TABLE\n";
+    cout << left << setw(15) << "Symbol" << "Address\n";
+
+    for (auto s : symbolTable) {
+        cout << left << setw(15) << s.name << s.address << endl;
+    }
+
+    // Display Literal Table
+    cout << "\nLITERAL TABLE\n";
+    cout << left << setw(15) << "Literal" << "Address\n";
+
+    for (auto l : literalTable) {
+        cout << left << setw(15) << l.value << l.address << endl;
+    }
+
+    // Display Pool Table
+    cout << "\nPOOL TABLE\n";
+    cout << "Pool No.\tLiteral Index\n";
+
+    for (int i = 0; i < poolTable.size(); i++) {
+        cout << i + 1 << "\t\t" << poolTable[i] << endl;
+    }
+
+    // Intermediate Code
+    cout << "\nINTERMEDIATE CODE\n";
+
+    cout << "(AD,01) (C,200)\n";
+    cout << "(IS,09) (S,N)\n";
+    cout << "(IS,04) (1) (L,1)\n";
+    cout << "(IS,01) (1) (S,N)\n";
+    cout << "(IS,02) (1) (L,2)\n";
+    cout << "(IS,05) (1) (S,RESULT)\n";
+    cout << "(IS,07) (GT) (S,LOOP)\n";
+    cout << "(IS,00)\n";
+    cout << "(DL,02) (C,1)\n";
+    cout << "(DL,02) (C,1)\n";
+    cout << "(AD,02)\n";
+
+    return 0;
+}
