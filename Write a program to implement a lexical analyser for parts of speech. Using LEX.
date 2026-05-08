@@ -1,0 +1,56 @@
+LEX Program
+%{
+#include<stdio.h>
+%}
+
+%%
+
+"Ram"|"Shyam"|"boy"|"girl"      { printf("%s : Noun\n", yytext); }
+
+"run"|"eat"|"write"|"play"      { printf("%s : Verb\n", yytext); }
+
+"good"|"beautiful"|"smart"      { printf("%s : Adjective\n", yytext); }
+
+"he"|"she"|"they"|"we"          { printf("%s : Pronoun\n", yytext); }
+
+"in"|"on"|"under"|"behind"      { printf("%s : Preposition\n", yytext); }
+
+[a-zA-Z]+                       { printf("%s : Unknown Word\n", yytext); }
+
+[ \t\n]+                        ;
+
+%%
+
+int main()
+{
+    printf("Enter sentence:\n");
+    yylex();
+    return 0;
+}
+
+int yywrap()
+{
+    return 1;
+}
+Sample Input
+Ram is good
+he play in garden
+Sample Output
+Ram : Noun
+is : Unknown Word
+good : Adjective
+he : Pronoun
+play : Verb
+in : Preposition
+garden : Unknown Word
+Commands to Execute
+Step 1: Save File
+Save as:
+
+speech.l
+Step 2: Generate C File
+lex speech.l
+Step 3: Compile
+gcc lex.yy.c -o speech -ll
+Step 4: Run
+./speech
